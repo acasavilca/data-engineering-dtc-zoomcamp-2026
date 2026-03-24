@@ -25,14 +25,15 @@ What's the version of `pip` in the image?
 - 24.2.1
 - 23.3.1
 
-```
+### Solution:
+```bash
 docker run -it \
 --rm \
 --entrypoint=bash \
 python:3.13
 ```
 
-```
+```bash
 root@efdd95d87422:/# pip -V
 pip 25.3 from /usr/local/lib/python3.13/site-packages/pip (python 3.13)
 ```
@@ -81,6 +82,9 @@ volumes:
 
 If multiple answers are correct, select any 
 
+### Solution:
+
+postgres:5432
 
 ## Prepare the Data
 
@@ -105,6 +109,15 @@ For the trips in November 2025 (lpep_pickup_datetime between '2025-11-01' and '2
 - 8,254
 - 8,421
 
+### Solution:
+```sql
+SELECT COUNT(*) AS short_trips_Nov2025
+  FROM public.green_tripdata_2025_11
+ WHERE lpep_pickup_datetime >= '2025-11-01' 
+   AND lpep_pickup_datetime <  '2025-12-01'
+   AND trip_distance <= 1;
+```
+8,007 trips
 
 ## Question 4. Longest trip for each day
 
@@ -117,6 +130,15 @@ Use the pick up time for your calculations.
 - 2025-11-23
 - 2025-11-25
 
+### Solution:
+```sql
+SELECT lpep_pickup_datetime::date AS day
+  FROM public.green_tripdata_2025_11
+ WHERE trip_distance <= 100
+ ORDER BY trip_distance DESC
+ LIMIT 1;
+```
+2025-11-14
 
 ## Question 5. Biggest pickup zone
 
@@ -127,6 +149,17 @@ Which was the pickup zone with the largest `total_amount` (sum of all trips) on 
 - Morningside Heights
 - Forest Hills
 
+### Solution:
+```sql
+SELECT zones."Zone",
+       SUM(trips.total_amount) OVER (PARTITION BY zones."Zone") AS total_amount
+  FROM public.green_tripdata_2025_11 trips
+  JOIN public.taxi_zone_lookup zones
+    ON trips."PULocationID" = zones."LocationID"
+ ORDER BY 2 DESC
+ LIMIT 1;
+```
+East Harlem North
 
 ## Question 6. Largest tip
 
@@ -139,6 +172,20 @@ Note: it's `tip` , not `trip`. We need the name of the zone, not the ID.
 - East Harlem North
 - LaGuardia Airport
 
+### Solution:
+```sql
+SELECT zones."Zone",
+       trips.tip_amount
+  FROM public.green_tripdata_2025_11 trips
+  JOIN public.taxi_zone_lookup zones
+    ON trips."DOLocationID" = zones."LocationID"
+ WHERE zones."Zone" = 'East Harlem North'
+   AND trips.lpep_pickup_datetime >= '2025-11-01' 
+   AND trips.lpep_pickup_datetime <  '2025-12-01'
+ ORDER BY 2 DESC
+ LIMIT 1;
+```
+East Harlem North
 
 ## Terraform
 
@@ -221,5 +268,4 @@ My solution: <LINK>
 
 Free course by @DataTalksClub: https://github.com/DataTalksClub/data-engineering-zoomcamp/
 ```
-
 
