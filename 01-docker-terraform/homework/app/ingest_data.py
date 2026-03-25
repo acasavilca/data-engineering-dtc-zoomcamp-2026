@@ -95,6 +95,16 @@ def run(pg_user, pg_pass, pg_host, pg_port, pg_db, target_table, chunksize, url)
             con=engine,
             if_exists="append"
         )
+    print("\n" + "="*60)
+    print("Data ingestion complete!")
+    print("="*60 + "\n")
+    print("You can now connect to pgAdmin at http://localhost:8080")
+    print("Email: admin@admin.com")
+    print(f"Pswd: {pg_pass}")
+    print(f"Username: {pg_user}")
+    print(f"Port: {pg_port}")
+    
+
 
 if __name__ == '__main__':
     run()

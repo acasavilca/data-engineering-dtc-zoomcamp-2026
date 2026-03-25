@@ -3,6 +3,12 @@ __pycache__/
 .env
 .venv/
 .ipynb_checkpoints/
+*.swp
 
-# Backup files
+# tagged files
 BACKUP_*
+DEL*
+
+**/.terraform/
+*.tfstate
+*.tfstate.*

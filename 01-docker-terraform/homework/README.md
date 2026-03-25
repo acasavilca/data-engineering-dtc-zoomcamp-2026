@@ -3,17 +3,6 @@
 In this homework we'll prepare the environment and practice
 Docker and SQL
 
-When submitting your homework, you will also need to include
-a link to your GitHub repository or other public code-hosting
-site.
-
-This repository should contain the code for solving the homework.
-
-When your solution has SQL or shell commands and not code
-(e.g. python files) file format, include them directly in
-the README file of your repository.
-
-
 ## Question 1. Understanding Docker images
  
 Run docker with the `python:3.13` image. Use an entrypoint `bash` to interact with the container.
@@ -84,21 +73,78 @@ If multiple answers are correct, select any
 
 ### Solution:
 
-postgres:5432
+postgres:5432 & db:5432
 
-## Prepare the Data
+## Dockerized data ingestion
 
-Download the green taxi trips data for November 2025:
-
+Use Docker Compose to start and initialize the PostgreSQL database service (wait for a couple of min):
 ```bash
-wget https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-11.parquet
+docker compose up -d
 ```
 
-You will also need the dataset with zones:
-
+Build the Docker image:
 ```bash
-wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv
+docker build -t taxi_ingest:v001 .
 ```
+
+Run ingestion for first table:
+```bash
+docker run -it --rm \
+--network=homework_default \
+taxi_ingest:v001 \
+--pg-user=root \
+--pg-pass=root \
+--pg-host=pgdatabase \
+--pg-port=5432 \
+--pg-db=ny_taxi \
+--target-table=green_tripdata_2025_11 \
+--url="https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-11.parquet"
+```
+
+Run ingestion for second table:
+```bash
+docker run -it --rm \
+--network=homework_default \
+taxi_ingest:v001 \
+--pg-user=root \
+--pg-pass=root \
+--pg-host=pgdatabase \
+--pg-port=5432 \
+--pg-db=ny_taxi \
+--target-table=taxi_zone_lookup \
+--url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
+```
+
+Access databse through pgcli:
+```bash
+uv run pgcli -h localhost -p 5432 -u root -d ny_taxi
+```
+```bash
+Password for root: root
+```
+
+Or pgadmin:
+1. **Open pgAdmin** at http://localhost:8080
+   - Email: `admin@admin.com`
+   - Password: `root`
+
+2. **Register PostgreSQL Server:**
+   - Right-click "Servers" → "Register" → "Server..."
+   
+3. **General tab:**
+   - Name: `pg` (or any name)
+
+4. **Connection tab:**
+   - Host: `pgdatabase`
+   - Port: `5432`
+   - Maintenance database: `ny_taxi`
+   - Username: `root`
+   - Password: `root`
+
+5. **Click "Save"**
+
+You should now see both tables under:
+**Servers → pg → Databases → ny_taxi → Schemas → public → Tables**
 
 ## Question 3. Counting short trips
 
@@ -134,7 +180,7 @@ Use the pick up time for your calculations.
 ```sql
 SELECT lpep_pickup_datetime::date AS day
   FROM public.green_tripdata_2025_11
- WHERE trip_distance <= 100
+ WHERE trip_distance < 100
  ORDER BY trip_distance DESC
  LIMIT 1;
 ```
@@ -174,18 +220,18 @@ Note: it's `tip` , not `trip`. We need the name of the zone, not the ID.
 
 ### Solution:
 ```sql
-SELECT zones."Zone",
+SELECT do_zones."Zone",
        trips.tip_amount
-  FROM public.green_tripdata_2025_11 trips
-  JOIN public.taxi_zone_lookup zones
-    ON trips."DOLocationID" = zones."LocationID"
- WHERE zones."Zone" = 'East Harlem North'
+  FROM public.green_tripdata_2025_11 AS trips
+  JOIN public.taxi_zone_lookup AS pu_zones ON trips."PULocationID" = pu_zones."LocationID"
+  JOIN public.taxi_zone_lookup AS do_zones ON trips."DOLocationID" = do_zones."LocationID"
+ WHERE pu_zones."Zone" = 'East Harlem North'
    AND trips.lpep_pickup_datetime >= '2025-11-01' 
    AND trips.lpep_pickup_datetime <  '2025-12-01'
  ORDER BY 2 DESC
  LIMIT 1;
 ```
-East Harlem North
+Yorkville West
 
 ## Terraform
 
@@ -212,60 +258,5 @@ Answers:
 - terraform init, terraform apply -auto-approve, terraform destroy
 - terraform import, terraform apply -y, terraform rm
 
-
-## Submitting the solutions
-
-* Form for submitting: https://courses.datatalks.club/de-zoomcamp-2026/homework/hw1
-
-
-## Learning in Public
-
-We encourage everyone to share what they learned. This is called "learning in public".
-
-### Why learn in public?
-
-- Accountability: Sharing your progress creates commitment and motivation to continue
-- Feedback: The community can provide valuable suggestions and corrections
-- Networking: You'll connect with like-minded people and potential collaborators
-- Documentation: Your posts become a learning journal you can reference later
-- Opportunities: Employers and clients often discover talent through public learning
-
-You can read more about the benefits [here](https://alexeyondata.substack.com/p/benefits-of-learning-in-public-and).
-
-Don't worry about being perfect. Everyone starts somewhere, and people love following genuine learning journeys!
-
-### Example post for LinkedIn
-
-```
-🚀 Week 1 of Data Engineering Zoomcamp by @DataTalksClub complete!
-
-Just finished Module 1 - Docker & Terraform. Learned how to:
-
-✅ Containerize applications with Docker and Docker Compose
-✅ Set up PostgreSQL databases and write SQL queries
-✅ Build data pipelines to ingest NYC taxi data
-✅ Provision cloud infrastructure with Terraform
-
-Here's my homework solution: <LINK>
-
-Following along with this amazing free course - who else is learning data engineering?
-
-You can sign up here: https://github.com/DataTalksClub/data-engineering-zoomcamp/
-```
-
-### Example post for Twitter/X
-
-
-```
-🐳 Module 1 of Data Engineering Zoomcamp done!
-
-- Docker containers
-- Postgres & SQL
-- Terraform & GCP
-- NYC taxi data pipeline
-
-My solution: <LINK>
-
-Free course by @DataTalksClub: https://github.com/DataTalksClub/data-engineering-zoomcamp/
-```
-
+### Solution:
+terraform init, terraform apply -auto-approve, terraform destroy
