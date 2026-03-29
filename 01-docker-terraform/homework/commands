@@ -1,32 +1,15 @@
-# Build docker container
-docker build -t taxi_ingest:v001 .
+#!/bin/bash
 
-# Initialize database
-docker compose up
+# Start DB and pgAdmin
+docker compose up -d
 
-# Create green_tripdata_2025_11 table and ingest data
-docker run -it --rm \
---network=homework_default \
-taxi_ingest:v001 \
---pg-user=root \
---pg-pass=root \
---pg-host=pgdatabase \
---pg-port=5432 \
---pg-db=ny_taxi \
---target-table=green_tripdata_2025_11 \
---url="https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-11.parquet"
+# Run ingestion for trips
+docker compose run --rm ingestor \
+  --target-table=green_tripdata_2025_11 \
+  --url="https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-11.parquet"
 
-# Create taxi_zone_lookup table and ingest data
-docker run -it --rm \
---network=homework_default \
-taxi_ingest:v001 \
---pg-user=root \
---pg-pass=root \
---pg-host=pgdatabase \
---pg-port=5432 \
---pg-db=ny_taxi \
---target-table=taxi_zone_lookup \
---url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
+# Run ingestion for zones
+docker compose run --rm ingestor \
+  --target-table=taxi_zone_lookup \
+  --url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv"
 
-# Access database through pgcli
-uv run pgcli -h localhost -p 5432 -u root -d ny_taxi

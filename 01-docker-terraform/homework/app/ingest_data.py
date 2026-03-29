@@ -33,15 +33,15 @@ def process_parquet(
             yield df
 
 @click.command()
-@click.option('--pg-user', default='root', help='PostgreSQL user')
-@click.option('--pg-pass', default='root', help='PostgreSQL password')
-@click.option('--pg-host', default='localhost', help='PostgreSQL host')
-@click.option('--pg-port', default=5432, type=int, help='PostgreSQL port')
-@click.option('--pg-db', default='ny_taxi', help='PostgreSQL database name')
+@click.option('--pg-user', envvar='PG_USER', default='root', help='PostgreSQL user')
+@click.option('--pg-pass', envvar='PG_PASS', default='root', help='PostgreSQL password')
+@click.option('--pg-host', envvar='PG_HOST', default='localhost', help='PostgreSQL host')
+@click.option('--pg-port', envvar='PG_PORT', default=5432, type=int, help='PostgreSQL port')
+@click.option('--pg-db', envvar='PG_DB', default='ny_taxi', help='PostgreSQL database name')
 @click.option('--target-table', default='yellow_taxi_data', help='Target table name')
 # @click.option('--year', default=None, type=int, help='collection year')
 # @click.option('--month', default=None, type=int, help='collection year')
-@click.option('--chunksize', default=100000, type=int, help='chunk size for reading file')
+@click.option('--chunksize', envvar='CHUNKSIZE', default=100000, type=int, help='chunk size for reading file')
 @click.option('--url', default="https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-11.parquet", help='URL to file')
 
 def run(pg_user, pg_pass, pg_host, pg_port, pg_db, target_table, chunksize, url): # year, month, 

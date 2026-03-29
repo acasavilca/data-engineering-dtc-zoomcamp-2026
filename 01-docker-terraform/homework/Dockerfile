@@ -12,6 +12,7 @@ WORKDIR /app
 
 # Add virtual environment to PATH so we can use installed packages
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app"
 
 # Copy dependency files first (better layer caching)
 COPY "pyproject.toml" "uv.lock" ./ 

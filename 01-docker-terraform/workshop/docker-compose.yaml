@@ -26,8 +26,9 @@ services:
       dockerfile: Dockerfile
     image: taxi_ingest:v001
     depends_on:
-      - pgdatabase
-    command:
+      pgdatabase:
+        condition: service_started
+    commands:
       - --pg-user=root
       - --pg-pass=root
       - --pg-host=pgdatabase
