@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+.ipynb_checkpoints/
+*.swp
+uv.lock
+
+# tagged files
+BACKUP_*
+DEL*
+DLT_upload_to_GCP.ipynb
