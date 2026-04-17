@@ -22,18 +22,7 @@ https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 
 ## Loading the data
 
-You can use the following scripts to load the data into your GCS bucket:
-
-- Python script: [load_yellow_taxi_data.py](./load_yellow_taxi_data.py)
-- Jupyter notebook with DLT: [DLT_upload_to_GCP.ipynb](./DLT_upload_to_GCP.ipynb)
-
-You will need to generate a Service Account with GCS Admin privileges or be authenticated with the Google SDK, and update the bucket name in the script.
-
-If you are using orchestration tools such as Kestra, Mage, Airflow, or Prefect, do not load the data into BigQuery using the orchestrator.
-
-Make sure that all 6 files show in your GCS bucket before beginning.
-
-Note: You will need to use the PARQUET option when creating an external table.
+Data was loaded into GCS datalake using Python script [load_yellow_taxi_data.py](./app/load_yellow_taxi_data.py) by running it in an container with ```docker compose up --build```.
 
 
 ## BigQuery Setup
