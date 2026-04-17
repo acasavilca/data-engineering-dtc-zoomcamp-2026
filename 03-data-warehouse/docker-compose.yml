@@ -1,0 +1,10 @@
+services:
+  taxi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: taxi_upload:v001
+    volumes:
+      - /home/andres/.gcp:/app/.gcp
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/.gcp/warehousing_hw3_key.json
